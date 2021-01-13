@@ -1,4 +1,4 @@
-# Gas_Atom_Model
+# Gas_particles
 A school project modelling gas molecules sticking together in a closed tank. It was made by me and a fellow student under supervision of our curator. I was responsible for the simulation and visualisation parts.
 
 ATTENTION: The visual part heavily blinks, so be aware and try not to cause seizures by it.
