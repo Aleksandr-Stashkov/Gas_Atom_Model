@@ -1,9 +1,9 @@
 # Gas_Particles
-A school project modelling gas molecules sticking together in a closed tank. It was made by me and a fellow student under supervision of our curator. I was responsible for the simulation and visualisation parts.
+A school project modelling gas molecules sticking together in a closed tank. It was made by me and a fellow student under supervision of our curator. I was responsible for the simulation and visualization parts.
 
 ATTENTION: The visual part heavily blinks, so be aware and try not to cause seizures by it.
 
-A quick guide for using the program:
+Downoad the project and launch the exe. A quick guide for using the program:
 
 The top button initializes the values set in the fields.
 
@@ -17,4 +17,4 @@ The last button does nothing! Apparently, it is not the last version, that I dug
 
 dT switch fastens the time, so that the final result is quicker to achive.
 
-Below is a graph panel with a button that shows/hides analytical graphs in real time.
+Below the buttons is a graph panel with a button that shows/hides analytical graphs constructed in real time.
