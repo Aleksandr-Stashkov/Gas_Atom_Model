@@ -1,0 +1,191 @@
+unit UnitCluster;
+
+interface
+
+uses Math;
+
+var
+  r : real;     {радиус}
+  sqrBlowV : real;  {скорость столкновения}
+
+  dt : real;    {промежуток времени}
+  maxV : real;  {максимальная скорость вдоль любой из осей}
+
+  maxX, maxY : real; {размеры камеры}
+
+type
+  TPoint = record     {частица в кластере}
+    X, Y : real;      {координаты}
+  end;
+
+  TCluster = class     {кластер}
+    public
+    Xc, Yc : real;     {центр масс}
+    Vx, Vy : real;     {скорости кластера}
+    PointCount : integer;       {количество элементов}
+    Point : array of TPoint;    {элементы кластера}
+    Enabled : boolean;           {true, если кластер корректен}
+
+    procedure Step;    {рассчёт движения}
+    function IsBlowed(var other : TCluster) : boolean; {проверка на столкновение}
+    procedure Connect(var other : TCluster);  {объединение кластеров}
+    procedure Clear;  {удаление кластера}
+  end;
+
+implementation
+
+procedure TCluster.Step; {рассчёт движения}
+var
+    i, j : integer;
+    d : real;    {сдвиг шариков при столкновении со стенкой}
+    flagx, flagy : boolean;  {регистраторы столкновений со стенкой}
+    tmpxc, tmpyc : real;  {для подсчёта центра масс}
+
+begin
+
+{сдвиг за один шаг}
+
+  for i := 0 to PointCount-1 do
+  begin
+    Point[i].X := Point[i].X + Vx * dt;
+    Point[i].Y := Point[i].Y + Vy * dt;
+  end;
+
+{рассчёт столкновений со стенками}
+
+  flagy := False;
+  flagx := False;
+
+  for i := 0 to PointCount-1 do
+  begin
+    If Point[i].X < r then
+    begin
+      flagx := True;
+      d := r - Point[i].X;
+      For j := 0 to PointCount-1 do
+      begin
+        Point[j].X := Point[j].X + d;
+      end;
+    end;
+
+    If Point[i].X > maxX - r then
+    begin
+      flagx := True;
+      d := Point[i].X - maxX + r;
+      For j := 0 to PointCount-1 do
+      begin
+        Point[j].X := Point[j].X - d;
+      end;
+    end;
+
+    If Point[i].Y < r then
+    begin
+      flagy := True;
+      d := r - Point[i].Y;
+      For j := 0 to PointCount-1 do
+      begin
+        Point[j].Y := Point[j].Y + d;
+      end;
+    end;
+
+    If Point[i].Y > maxY - r then
+    begin
+      flagy := True;
+      d := Point[i].Y - maxY + r;
+      For j := 0 to PointCount-1 do
+      begin
+        Point[j].Y := Point[j].Y - d;
+      end;
+    end;
+  end;
+
+  If (flagx = True) then
+      Vx := -Vx;
+  If (flagy = True) then
+      Vy := -Vy;
+
+{рассчёт центра масс}
+
+    tmpxc := 0;
+    tmpyc := 0;
+    For i := 0 to PointCount - 1 do
+    begin
+      tmpxc := tmpxc + Point[i].X;
+      tmpyc := tmpyc + Point[i].Y;
+    end;
+    xc := tmpxc / PointCount;
+    yc := tmpyc / PointCount;
+end;
+
+
+function TCluster.IsBlowed(var other : TCluster) : boolean;   {проверка на столкновение}
+var
+  i, j : integer;
+begin
+  For i := 0 to PointCount-1 do
+  begin
+    For j := 0 to other.PointCount-1 do
+    begin
+      if (sqr(Vx - other.Vx) +
+          sqr(Vy - other.Vy) <=
+          sqrBlowV) then
+      begin
+        if (sqr(Point[i].X - other.Point[j].X) +
+            sqr(Point[i].Y - other.Point[j].Y) <
+            4*sqr(r)) then
+        begin
+          IsBlowed := true;
+          exit;
+        end;
+      end;
+    end;
+  end;
+
+  IsBlowed := False;
+end;
+
+
+procedure TCluster.Connect(var other : TCluster);
+var
+  i : integer;
+  tmpxc, tmpyc : real; {для подсчёта центра масс}
+
+begin
+
+{Рассчёт скорости}
+
+  Vx := ((Vx * PointCount)+ (other.Vx * other.PointCount)) / (PointCount + other.PointCount);
+  Vy := ((Vy * PointCount)+ (other.Vy * other.PointCount)) / (PointCount + other.PointCount);
+
+{добавление точек}
+
+  SetLength(Point, PointCount + other.PointCount);
+  for i := 0 to other.PointCount-1 do
+  begin
+    Point[PointCount + i].X := other.Point[i].X;
+    Point[PointCount + i].Y := other.Point[i].Y;
+  end;
+  PointCount := PointCount +  other.PointCount;
+
+{рассчёт центра масс}
+
+  tmpxc := 0;
+  tmpyc := 0;
+  For i := 0 to PointCount - 1 do
+  begin
+    tmpxc := tmpxc + Point[i].X;
+    tmpyc := tmpyc + Point[i].Y;
+  end;
+  xc := tmpxc / PointCount;
+  yc := tmpyc / PointCount;
+end;
+
+
+procedure TCluster.Clear;
+begin
+  SetLength(Point, 0);
+  PointCount := 0;
+end;
+
+
+end.
